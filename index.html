@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OnlyInfluencer</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- Invisible reCAPTCHA container for phone -->
+  <div id="recaptcha-container"></div>
+
+  <!-- Header -->
+  <header class="navbar">
+    <div class="logo">OnlyInfluencer</div>
+
+    <!-- Hamburger menu icon -->
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+
+    <!-- Navigation links -->
+    <nav class="nav-links" id="navMenu">
+      <a href="javascript:void(0)" onclick="openLoginOverlay()">Login</a>
+      <a href="javascript:void(0)" onclick="openModal()">Register</a>
+    </nav>
+  </header>
+
+
+  <section class="hero">
+    <h1>Welcome to <span>OnlyInfluencer</span></h1>
+    <h2>Turn Your Views Into Real Income!</h2>
+    <p>On OnlyInfluencer, you earn money based on the number of views your posts get. For every 1,000 views, you get
+      paid based on your CPM (Cost Per Mille) rate.</p>
+
+    <div class="rates">
+      <div class="rate-box">$1.00<br><span>CPM Rate 1.00</span></div>
+      <div class="rate-box">$1.10<br><span>CPM Rate 1.10</span></div>
+      <div class="rate-box">$0.95<br><span>CPM Rate 0.95</span></div>
+    </div>
+
+    <p class="note">Your CPM may vary based on content type, viewer location, and performance.</p>
+
+    <!-- Demo Ad Box -->
+    <div class="promo-card">
+      <div class="promo-header">
+        <span class="play-icon">▶</span>
+        <strong>Demo Video Ad</strong>
+        <span class="close-btn">✕</span>
+      </div>
+      <p>Boost Your Earnings with Premium!</p>
+      <ul>
+        <li>🚀 Upgrade to Pro and get:</li>
+        <li>• Higher CPM rates</li>
+        <li>• Priority support</li>
+      </ul>
+    </div>
+
+    <!-- Register Button (outside promo-card) -->
+    <button class="register-btn" onclick="openModal()">Register Now</button>
+
+    <!-- Register Modal Overlay -->
+    <div class="modal-overlay" id="registerModal">
+      <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">×</button>
+        <h2>Create Account</h2>
+        <p class="sub-heading">Join OnlyInfluencer and start earning</p>
+
+        <form class="register-form">
+          <input type="text" placeholder="Full Name" required />
+          <input type="text" placeholder="Email address or phone number" required />
+          <input type="text" id="username" placeholder="Username" required />
+          <small id="username-status" class="username-status"></small>
+          <ul id="suggestions" class="username-suggestions"></ul>
+
+          <small class="dob"> Date of Birth</small>
+          <input type="date" id="dob" required />
+          <small class="dob-note">Only users 10 years or older can join OnlyInfluencer.</small>
+
+          <input type="password" id="password" placeholder="Password" required />
+          <small id="password-tip" class="password-tip">
+            Use a strong password at least 8 characters.
+          </small>
+          <small id="password-check" class="password-status"></small>
+
+          <input type="password" id="confirm-password" placeholder="Confirm Password" required />
+          <small id="password-match" class="password-status"></small>
+
+
+          <label class="checkbox-container">
+            <input type="checkbox" required />
+            <span>I agree to the <a href="#">terms of service</a> and <a href="#">privacy policy</a></span>
+          </label>
+
+          <button type="submit" class="create-btn">Create Account</button>
+          <div class="login-redirect">
+            Already have an account? <a href="javascript:void(0)" onclick="openLoginOverlay()">Log in</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+  </section>
+  <!-- LOGIN OVERLAY -->
+  <div class="overlay" id="loginOverlay">
+    <div class="login-box">
+      <!-- Inside your login overlay -->
+      <button class="close-login" onclick="closeLoginOverlay()">×</button>
+      <h2>Welcome Back</h2>
+      <p class="subtitle">Sign in to your OnlyInfluencer account</p>
+
+      <div class="tab-buttons">
+        <button class="active" onclick="switchTab('email')">Email</button>
+        <button onclick="switchTab('phone')">Phone</button>
+      </div>
+
+      <div id="emailTab">
+        <div class="input-group">
+          <input type="email" placeholder="Enter your email">
+        </div>
+      </div>
+
+      <div id="phoneTab" style="display:none">
+        <div class="input-group">
+          <input type="tel" placeholder="Enter your phone number">
+        </div>
+      </div>
+
+      <div class="input-group">
+        <input type="password" placeholder="Enter your password">
+      </div>
+
+      <div class="options">
+        <label><input type="checkbox"> Remember me</label>
+        <a href="#">Forgot password?</a>
+      </div>
+
+      <button class="sign-in-btn">Sign In</button>
+
+      <div class="divider">Or continue with</div>
+
+      <div class="social-login">
+        <button><img src="https://img.icons8.com/color/20/000000/google-logo.png" /> Google</button>
+        <button><img src="https://img.icons8.com/color/20/000000/facebook-new.png" /> Facebook</button>
+      </div>
+
+      <div class="signup-link">
+        Don’t have an account? <a href="#" onclick="closeLoginOpenRegister()">Sign up</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why Choose Section -->
+  <section class="why-choose">
+    <h2>Why Choose OnlyInfluencer?</h2>
+    <div class="features">
+      <div class="feature">
+        <div class="icon pink">$</div>
+        <h3>Transparent Earnings</h3>
+        <p>Clear CPM rates with real-time tracking of your earnings per 1,000 views.</p>
+      </div>
+      <div class="feature">
+        <div class="icon purple">↗</div>
+        <h3>Performance Based</h3>
+        <p>Your CPM rate can increase based on content quality and audience engagement.</p>
+      </div>
+      <div class="feature">
+        <div class="icon green">💸</div>
+        <h3>Fast Payouts</h3>
+        <p>Get paid quickly with multiple payout options and low minimum thresholds.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============  OTP “Choose Method” Modal  ============ -->
+  <div class="otp-modal-overlay" id="otpModal" style="display:none;">
+    <div class="modal">
+      <div class="icon-circle"><i class="fas fa-envelope"></i></div>
+      <h2>Verify Your Account</h2>
+      <p>Choose how you'd like to receive your verification code</p>
+
+      <div class="option-box" id="emailOption">
+        <div class="left">
+          <i class="fas fa-envelope-circle-check"></i>
+          <div class="text">
+            <strong>Email Verification</strong>
+            <small id="otpEmail">example@email.com</small>
+          </div>
+        </div>
+        <i class="fas fa-chevron-right"></i>
+      </div>
+
+      <div class="option-box" id="smsOption">
+        <div class="left">
+          <i class="fas fa-sms"></i>
+          <div class="text">
+            <strong>SMS Verification</strong>
+            <small id="otpPhone">+91 98765‑43210</small>
+          </div>
+        </div>
+        <i class="fas fa-chevron-right"></i>
+      </div>
+
+      <a href="javascript:void(0)" class="back-link" onclick="backToRegister()">← Back to Registration</a>
+    </div>
+  </div>
+
+  <!-- ============  OTP “Enter Code” Modal  ============ -->
+  <div class="otp-code-modal" id="otpCodeModal" style="display:none;">
+    <div class="otp-code-box">
+      <button class="close-otp" onclick="closeOTPModal()">×</button>
+
+      <div class="circle-icon"><i class="fas fa-key"></i></div>
+      <h2>Enter Verification Code</h2>
+      <p>We've sent a 6‑digit code to <span id="otpTarget">your contact</span></p>
+
+      <div class="otp-inputs">
+        <input type="text" maxlength="1" class="otp-input" />
+        <input type="text" maxlength="1" class="otp-input" />
+        <input type="text" maxlength="1" class="otp-input" />
+        <input type="text" maxlength="1" class="otp-input" />
+        <input type="text" maxlength="1" class="otp-input" />
+        <input type="text" maxlength="1" class="otp-input" />
+      </div>
+      <small id="otpErrorMsg" style="color:red; display:block; margin-bottom:10px; font-size: 13px;"></small>
+
+
+      <!-- Resend Code Section -->
+      <div class="resend-info">
+        Didn’t receive the code?
+        <span id="resendWrapper">
+          <span id="resendCountdown">Resend in <span id="otpTimer">30</span>s</span>
+          <a href="javascript:void(0);" id="resendLink" onclick="resendOTP()" style="display:none;">Resend Code</a>
+        </span>
+      </div>
+
+
+      <button class="verify-btn" onclick="verifyEnteredOTP()">Verify & Complete Registration</button>
+
+      <a href="javascript:void(0)" class="alt-method" onclick="backToOTPOptions()">← Choose Different Method</a>
+    </div>
+  </div>
+
+
+  <!-- Footer -->
+  <footer class="footer">
+    <h2>OnlyInfluencer</h2>
+    <p>Turn your content into income with transparent, performance-based earnings.</p>
+    <div class="footer-links">
+      <a href="#">Privacy Policy</a>
+      <a href="#">Terms of Service</a>
+      <a href="#">Contact</a>
+    </div>
+    <p class="copy">© 2024 OnlyInfluencer. All rights reserved.</p>
+  </footer>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-analytics-compat.js"></script>
+
+  <!-- Your JS file -->
+  <script src="script.js"></script>
+
+
+</body>
+
+</html>
