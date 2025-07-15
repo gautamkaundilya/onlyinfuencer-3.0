@@ -169,23 +169,69 @@ function saveProfileChanges() {
   closeEditOverlay();
 }
 
-// ✅ Apply Profile to UI
 function applyProfileData(data) {
   document.querySelector('.username').textContent = data.username || 'user';
 
-  // ✅ Avatar Initials Logic
   const avatar = document.getElementById("avatarPreview");
 
+  // ✅ Reset initials if no image
   if (!avatar.classList.contains("has-image")) {
-    avatar.style.backgroundImage = ""; // remove any image
-    avatar.classList.remove("has-image"); // remove class so color: transparent na lage
+    avatar.style.backgroundImage = "";
+    avatar.classList.remove("has-image");
 
     avatar.innerHTML = getInitialsFromName(data.displayName || data.username || "U") +
       `<label for="dpInput"><i class="fas fa-camera"></i></label>
-     <input type="file" id="dpInput" accept="image/*" style="display: none;" />`;
+       <input type="file" id="dpInput" accept="image/*" style="display: none;" />`;
+
+    // 🛠 Re-bind upload event
+    const newInput = avatar.querySelector("#dpInput");
+    if (newInput) {
+      newInput.addEventListener("change", function handleChange(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = () => {
+          const overlay = document.createElement("div");
+          overlay.className = "overlay";
+          overlay.innerHTML = `
+            <div class="overlay-content">
+              <img src="${reader.result}" alt="Preview" />
+              <div>
+                <button class="btn-update">Update</button>
+                <button class="btn-cancel">Cancel</button>
+              </div>
+            </div>
+          `;
+          document.body.appendChild(overlay);
+
+          overlay.querySelector(".btn-cancel").onclick = () => {
+            overlay.remove();
+            newInput.value = '';
+          };
+
+          overlay.querySelector(".btn-update").onclick = () => {
+            avatar.style.backgroundImage = `url('${reader.result}')`;
+            avatar.style.backgroundSize = "cover";
+            avatar.style.backgroundPosition = "center";
+            avatar.classList.add("has-image");
+
+            avatar.innerHTML = `
+              <label for="dpInput"><i class="fas fa-camera"></i></label>
+              <input type="file" id="dpInput" accept="image/*" style="display: none;" />
+            `;
+
+            overlay.remove();
+            // 🔁 DP input rebinding
+            initDPUpload();
+          };
+        };
+        reader.readAsDataURL(file);
+      });
+    }
   }
 
-
+  // ✅ Set full profile info
   const bio = document.querySelector('.bio');
   if (bio) {
     bio.innerHTML = '';
@@ -196,6 +242,7 @@ function applyProfileData(data) {
     if (data.website) bio.innerHTML += `<p>🔗 <a href="${data.website}" target="_blank">${data.website}</a></p>`;
   }
 }
+
 
 // ✅ Get Profile Data
 function getProfileData() {
