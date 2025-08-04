@@ -785,39 +785,460 @@ input:checked + .slider:before {
 }
 
 /* overlay 1 */
-/* For step overlays, Instagram style */
+/* =========================
+   Instagram Style Upload Overlay (Responsive)
+   ========================= */
 #multiStepUploadOverlay .overlay-content {
+  width: 100%;
+  max-width: 430px;
+  min-width: 300px;
+  min-height: 420px;
+  max-height: 98vh;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.19);
   padding: 0;
-  border-radius: 16px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.23);
   text-align: center;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  /* Center inside overlay */
+  margin: 0;
+  overflow: hidden;
 }
+
 #multiStepUploadOverlay .upload-instagram-step1 {
-  padding: 36px 36px 24px 36px;
+  width: 100%;
+  padding: 45px 42px 34px 42px;
 }
+
 #multiStepUploadOverlay .upload-instagram-icon {
-  font-size: 54px;
-  color: #828282;
-  margin-bottom: 18px;
+  font-size: 55px;
+  color: #929292;
+  margin-bottom: 16px;
+  margin-top: 6px;
 }
+
 #multiStepUploadOverlay .upload-instagram-btn {
-  margin-top: 20px;
+  width: 85%;
+  max-width: 260px;
+  margin: 28px auto 0 auto;
+  display: block;
+  font-size: 1.13rem;
+  padding: 13px 0;
   background: #0095f6;
   color: #fff;
-  padding: 10px 22px;
   border: none;
-  border-radius: 8px;
+  border-radius: 9px;
   font-weight: 600;
-  font-size: 1rem;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.18s;
+  letter-spacing: 0.1px;
 }
 #multiStepUploadOverlay .upload-instagram-btn:hover {
   background: #1877f2;
 }
+
+/* Close button fix */
 #multiStepUploadOverlay .close-btn {
   position: absolute;
-  top: 10px; right: 14px;
-  background: none; border: none;
-  font-size: 1.6rem; color: #888; cursor: pointer;
+  top: 15px;
+  right: 19px;
+  background: none;
+  border: none;
+  font-size: 2.1rem;
+  color: #888;
+  cursor: pointer;
+  z-index: 2;
+  padding: 0 6px;
+  line-height: 1;
 }
+
+/* Step 1 Drag/Drop Text */
+#multiStepUploadOverlay .upload-instagram-step1 div[style*="color: #262626"] {
+  color: #262626;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  margin-top: 5px;
+  font-weight: 500;
+}
+
+@media (max-width: 600px) {
+  #multiStepUploadOverlay .overlay-content {
+    max-width: 99vw;
+    min-width: 0;
+    width: 98vw;
+    min-height: 260px;
+    max-height: 96vh;
+    border-radius: 16px;
+    padding: 0;
+  }
+  #multiStepUploadOverlay .upload-instagram-step1 {
+    padding: 24px 10px 18px 10px;
+  }
+  #multiStepUploadOverlay .close-btn {
+    top: 7px;
+    right: 9px;
+    font-size: 1.6rem;
+  }
+  #multiStepUploadOverlay .upload-instagram-icon {
+    font-size: 38px;
+    margin-bottom: 13px;
+    margin-top: 0;
+  }
+}
+
+/* ================= Overlay 2: Instagram Crop/Resize/Zoom ================== */
+
+/* Main overlay container */
+#multiStepUploadOverlay .step2-crop-main {
+  width: 100%;
+  max-width: 430px;
+  min-width: 260px;
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 0 12px 0;
+  min-height: 490px;
+  max-height: 99vh;
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  #multiStepUploadOverlay .step2-crop-main {
+    max-width: 98vw;
+    min-width: 0;
+    width: 98vw;
+    border-radius: 12px;
+    min-height: 350px;
+    padding: 0 0 8px 0;
+  }
+}
+
+/* ---------- Header ---------- */
+#multiStepUploadOverlay .step2-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 13px 13px 4px 13px;
+  font-weight: 600;
+  font-size: 1.14rem;
+  border-bottom: 1px solid #eee;
+  background: #fff;
+  position: relative;
+}
+
+#multiStepUploadOverlay .step2-header .crop-title {
+  flex: 1;
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  letter-spacing: 0.01em;
+}
+
+#multiStepUploadOverlay .step2-header button {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #444;
+  cursor: pointer;
+  padding: 3px 10px;
+  margin: 0 2px;
+}
+
+#multiStepUploadOverlay .step2-header .next-btn {
+  font-size: 1rem;
+  color: #fff;
+  background: #0095f6;
+  border-radius: 12px;
+  padding: 7px 17px;
+  font-weight: 600;
+  margin-left: 5px;
+  margin-right: 0;
+  letter-spacing: 0.04em;
+  transition: background 0.13s;
+  border: none;
+}
+#multiStepUploadOverlay .step2-header .next-btn:active,
+#multiStepUploadOverlay .step2-header .next-btn:hover {
+  background: #1877f2;
+}
+
+/* ---------- Crop Image View ---------- */
+#multiStepUploadOverlay .crop-image-view {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: #f3f4f6;
+  margin: 0;
+  border-bottom: 1px solid #e3e3e3;
+  min-height: 320px;
+  overflow: visible;
+}
+
+@media (max-width: 600px) {
+  #multiStepUploadOverlay .crop-image-view {
+    min-height: 210px;
+    padding-top: 0;
+  }
+}
+
+#multiStepUploadOverlay .crop-image-wrap {
+  cursor: grab;
+  overflow: hidden;
+  border-radius: 10px;
+  background: #fff;
+  user-select: none;
+  touch-action: none;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.05);
+}
+
+#multiStepUploadOverlay .crop-image-wrap.original img,
+#multiStepUploadOverlay .crop-image-wrap.original video {
+  object-fit: contain !important;
+  background: #fff;
+  cursor: default;
+}
+#multiStepUploadOverlay .crop-image-wrap.ratio img,
+#multiStepUploadOverlay .crop-image-wrap.ratio video {
+  object-fit: cover !important;
+  cursor: grab;
+}
+#multiStepUploadOverlay .crop-image-wrap:active { cursor: grabbing; }
+
+#multiStepUploadOverlay .crop-image-wrap img,
+#multiStepUploadOverlay .crop-image-wrap video {
+  pointer-events: none;
+  user-drag: none;
+  user-select: none;
+  min-width: 100px;
+  min-height: 100px;
+  position: absolute;
+  left: 0; top: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+}
+
+/* ---------- Arrows ---------- */
+#multiStepUploadOverlay .crop-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 2.1rem;
+  background: #fff;
+  color: #444;
+  border: none;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.21);
+  padding: 8px 15px;
+  cursor: pointer;
+  z-index: 5;
+  opacity: 0.98;
+  transition: background 0.12s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#multiStepUploadOverlay .crop-arrow.left { left: 10px; }
+#multiStepUploadOverlay .crop-arrow.right { right: 10px; }
+#multiStepUploadOverlay .crop-arrow:active,
+#multiStepUploadOverlay .crop-arrow:hover {
+  background: #eaf2ff;
+}
+
+/* ---------- Crop Tools (Resize, Zoom) ---------- */
+#multiStepUploadOverlay .crop-tools {
+  position: absolute;
+  left: 14px;
+  bottom: 16px;
+  display: flex;
+  gap: 13px;
+  z-index: 4;
+}
+#multiStepUploadOverlay .crop-tool-btn {
+  background: #fff;
+  border-radius: 50%;
+  border: 1.2px solid #e3e3e3;
+  font-size: 1.22rem;
+  color: #444;
+  padding: 6px 8px;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#multiStepUploadOverlay .crop-tool-btn:active {
+  background: #f3f4f6;
+}
+
+/* ---------- Aspect Ratio Options ---------- */
+#multiStepUploadOverlay .crop-aspect-options {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: rgba(42,42,42,0.88);
+  border-radius: 12px;
+  color: #fff;
+  padding: 13px 17px 11px 17px;
+  font-size: 1.06rem;
+  z-index: 10;
+  box-shadow: 0 2px 7px rgba(0,0,0,0.15);
+}
+#multiStepUploadOverlay .crop-aspect-options label {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1em;
+}
+#multiStepUploadOverlay .crop-aspect-options label:last-child { margin-bottom: 0;}
+#multiStepUploadOverlay .crop-aspect-options input[type="radio"] {
+  accent-color: #1877f2;
+  width: 1.17em;
+  height: 1.17em;
+  margin-right: 4px;
+}
+#multiStepUploadOverlay .crop-aspect-options .aspect-icon {
+  font-size: 1.25em;
+  margin-left: 3px;
+}
+
+/* ---------- Zoom Slider ---------- */
+#multiStepUploadOverlay .crop-zoom-bar {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  z-index: 8;
+  background: rgba(33,33,33,0.68);
+  border-radius: 8px;
+  padding: 7px 15px;
+}
+#multiStepUploadOverlay .crop-zoom-bar input[type="range"] {
+  width: 112px;
+  accent-color: #1877f2;
+  margin: 0 5px;
+  height: 2.2px;
+}
+#multiStepUploadOverlay .crop-zoom-bar .zoom-label {
+  color: #fff;
+  font-size: 1.13em;
+}
+
+/* ---------- Thumbnail Row ---------- */
+#multiStepUploadOverlay .step2-thumbnails {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  overflow-x: auto;
+  background: #fff;
+  padding: 10px 5px 0 5px;
+  gap: 9px;
+  min-height: 60px;
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+}
+
+#multiStepUploadOverlay .thumb-wrapper {
+  position: relative;
+  margin: 0 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#multiStepUploadOverlay .thumb-image,
+#multiStepUploadOverlay .thumb-video {
+  width: 54px;
+  height: 54px;
+  border-radius: 7px;
+  object-fit: cover;
+  border: 2px solid #bbb;
+  background: #eee;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.09);
+  transition: border 0.15s;
+}
+#multiStepUploadOverlay .thumb-image.selected,
+#multiStepUploadOverlay .thumb-video.selected {
+  border: 2.3px solid #0095f6;
+}
+.thumb-video-icon {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: rgba(0,0,0,0.64);
+  color: #fff;
+  border-radius: 4px;
+  font-size: 15px;
+  padding: 1.5px 5px 1.5px 5px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+#multiStepUploadOverlay .thumb-remove-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background: #fff;
+  color: #e53e3e;
+  border: 1.3px solid #bbb;
+  font-size: 1.16rem;
+  border-radius: 50%;
+  cursor: pointer;
+  padding: 2px 5.5px;
+  z-index: 3;
+}
+#multiStepUploadOverlay .thumb-add-btn {
+  background: #f3f4f6;
+  color: #888;
+  border: 1.7px dashed #bbb;
+  border-radius: 7px;
+  width: 54px;
+  height: 54px;
+  font-size: 2.19rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  #multiStepUploadOverlay .thumb-image,
+  #multiStepUploadOverlay .thumb-video,
+  #multiStepUploadOverlay .thumb-add-btn {
+    width: 42px;
+    height: 42px;
+    font-size: 1.33rem;
+  }
+  #multiStepUploadOverlay .thumb-remove-btn {
+    top: -6px;
+    right: -6px;
+    font-size: 1.02rem;
+    padding: 1px 4px;
+  }
+}
+
+

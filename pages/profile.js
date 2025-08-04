@@ -73,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function () {
 function initDPUpload() {
   const avatar = document.getElementById('avatarPreview');
   let dpInput = document.getElementById('dpInput');
-  
+
 
   if (!avatar || !dpInput) return;
 
@@ -292,7 +292,7 @@ function getInitialsFromName(name) {
     return (words[0].charAt(0) + words[1].charAt(0)).toUpperCase();
   }
 }
-
+// multiple overlays
 document.addEventListener("DOMContentLoaded", function () {
   const uploadTrigger = document.getElementById("uploadTrigger");
   const overlay = document.getElementById("multiStepUploadOverlay");
@@ -310,7 +310,7 @@ document.addEventListener("DOMContentLoaded", function () {
         <div style="color: #262626; font-size: 1.05rem; margin-bottom: 8px;">
           Drag photos and videos here
         </div>
-        <button class="upload-instagram-btn" id="uploadSelectBtn">Select From Computer</button>
+        <button class="upload-instagram-btn" id="uploadSelectBtn">Select From Gallery</button>
         <input type="file" id="multiStepMediaInput" accept="image/*,video/*" multiple style="display: none;">
       </div>
     `;
@@ -318,7 +318,6 @@ document.addEventListener("DOMContentLoaded", function () {
     document.body.style.overflow = "hidden";
 
     // Drag-drop functionality can be added here if needed.
-
     // Button: Select from Computer
     const selectBtn = document.getElementById("uploadSelectBtn");
     const input = document.getElementById("multiStepMediaInput");
@@ -334,43 +333,259 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // Step 2: Media Preview
   function showUploadStep2(files) {
+  let currIdx = 0;
+  let currFiles = files.slice();
+  let cropMode = 'original'; // original, 1:1, 4:5, 16:9
+  let zoom = 1;
+  let offset = { x: 0, y: 0 };
+  let dragging = false, dragStart = { x: 0, y: 0 }, offsetStart = { x: 0, y: 0 };
+
+  function getAspect(aspect) {
+    if (aspect === "1:1") return 1;
+    if (aspect === "4:5") return 4 / 5;
+    if (aspect === "16:9") return 16 / 9;
+    return null;
+  }
+
+  function renderStep2() {
+    const file = currFiles[currIdx];
+    let aspectVal = getAspect(cropMode);
+    // Make crop box Instagram style — centered and max possible size
+    let cropW = 330, cropH = 370;
+    if (aspectVal) {
+      if (aspectVal >= 1) {
+        cropW = 330; cropH = Math.round(330 / aspectVal);
+      } else {
+        cropH = 330; cropW = Math.round(330 * aspectVal);
+      }
+    }
+    // Mobile responsiveness
+    if (window.innerWidth < 600) {
+      cropW = Math.min(280, window.innerWidth - 38);
+      cropH = aspectVal ? Math.round(cropW / aspectVal) : 280;
+    }
+
     stepContent.innerHTML = `
-      <button class="close-btn" onclick="closeMultiStepOverlay()">&times;</button>
-      <div style="padding: 30px 18px; min-height: 280px;">
-        <h3 style="font-weight: 600; margin-bottom: 10px;">Preview & Next</h3>
-        <div id="multiStepPreview" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px;"></div>
-        <button class="upload-instagram-btn" id="uploadNextStepBtn">Next</button>
+      <div class="step2-crop-main" style="align-items:center;">
+        <div class="step2-header">
+          <button type="button" class="back-btn" style="font-size:1.6rem;background:none;border:none;">&lt;</button>
+          <span class="crop-title">Crop</span>
+          <button class="next-btn" id="cropNextBtn">Next</button>
+        </div>
+        <div class="crop-image-view" style="height:${cropH + 0}px;display:flex;align-items:center;justify-content:center;">
+          <div class="crop-image-wrap" style="width:${cropW}px;height:${cropH}px;margin:auto;">
+            ${file.type.startsWith("image/")
+              ? `<img src="${URL.createObjectURL(file)}" id="mainCropMedia" draggable="false" />`
+              : `<video src="${URL.createObjectURL(file)}" id="mainCropMedia" autoplay muted loop draggable="false"></video>`
+            }
+          </div>
+          ${currFiles.length > 1 ? `
+            <button class="crop-arrow left" id="prevCrop" style="left:10px;"><i class="fas fa-chevron-left"></i></button>
+            <button class="crop-arrow right" id="nextCrop" style="right:10px;"><i class="fas fa-chevron-right"></i></button>
+          ` : ''}
+          <div class="crop-tools">
+            <button class="crop-tool-btn" title="Resize" id="resizeBtn"><i class="fas fa-expand"></i></button>
+            <button class="crop-tool-btn" title="Zoom" id="zoomBtn"><i class="fas fa-search-plus"></i></button>
+          </div>
+          <div class="crop-aspect-options" id="cropAspectOptions" style="display:none;">
+            <label>
+              <input type="radio" name="aspect" value="original" ${cropMode === "original" ? "checked" : ""} />
+              <span class="aspect-label">Original</span>
+              <span class="aspect-icon"><i class="far fa-image"></i></span>
+            </label>
+            <label>
+              <input type="radio" name="aspect" value="1:1" ${cropMode === "1:1" ? "checked" : ""} />
+              <span class="aspect-label">1:1</span>
+              <span class="aspect-icon"><i class="fas fa-square"></i></span>
+            </label>
+            <label>
+              <input type="radio" name="aspect" value="4:5" ${cropMode === "4:5" ? "checked" : ""} />
+              <span class="aspect-label">4:5</span>
+              <span class="aspect-icon"><i class="fas fa-rectangle-vertical"></i></span>
+            </label>
+            <label>
+              <input type="radio" name="aspect" value="16:9" ${cropMode === "16:9" ? "checked" : ""} />
+              <span class="aspect-label">16:9</span>
+              <span class="aspect-icon"><i class="fas fa-rectangle-wide"></i></span>
+            </label>
+          </div>
+          <div class="crop-zoom-bar" id="zoomBar" style="display:none;">
+            <span class="zoom-label"><i class="fas fa-search-minus"></i></span>
+            <input type="range" min="1" max="2.6" step="0.01" id="zoomSlider" value="${zoom}">
+            <span class="zoom-label"><i class="fas fa-search-plus"></i></span>
+          </div>
+        </div>
+        <div class="step2-thumbnails">
+          ${currFiles.map((f, idx) => `
+            <div class="thumb-wrapper">
+              ${f.type.startsWith("image/") ?
+                `<img src="${URL.createObjectURL(f)}" class="thumb-image${currIdx === idx ? ' selected' : ''}" data-idx="${idx}" />`
+                :
+                `<video src="${URL.createObjectURL(f)}" class="thumb-video${currIdx === idx ? ' selected' : ''}" data-idx="${idx}" muted loop></video>
+                  <span class="thumb-video-icon"><i class="fas fa-play"></i></span>`
+              }
+              <button class="thumb-remove-btn" data-idx="${idx}" title="Remove">&times;</button>
+            </div>
+          `).join('')}
+          ${currFiles.length < 5 ? `<div class="thumb-add-btn" id="addMoreThumb">+</div>` : ''}
+        </div>
       </div>
     `;
-    // Preview rendering
-    const preview = document.getElementById("multiStepPreview");
-    files.forEach(file => {
-      const url = URL.createObjectURL(file);
-      let el;
-      if (file.type.startsWith("image/")) {
-        el = document.createElement("img");
-        el.src = url;
-        el.style.width = "80px";
-        el.style.height = "80px";
-        el.style.objectFit = "cover";
-        el.style.borderRadius = "8px";
-      } else {
-        el = document.createElement("video");
-        el.src = url;
-        el.controls = true;
-        el.style.width = "80px";
-        el.style.height = "80px";
-        el.style.borderRadius = "8px";
-        el.style.objectFit = "cover";
-      }
-      preview.appendChild(el);
-    });
 
-    // Next step
-    document.getElementById("uploadNextStepBtn").onclick = () => {
-      showUploadStep3(files);
-    };
+    // Crop image/video transform and pan/zoom
+    setTimeout(() => {
+      const media = document.getElementById('mainCropMedia');
+      if (!media) return;
+
+      function getFrameBox() {
+        return { w: cropW, h: cropH, aspect: aspectVal };
+      }
+      function applyTransform() {
+        let cx = offset.x, cy = offset.y;
+        media.style.transform = `translate(${cx}px,${cy}px) scale(${zoom})`;
+      }
+      function clampOffsets(nx, ny) {
+        let mw = media.naturalWidth || media.videoWidth || cropW;
+        let mh = media.naturalHeight || media.videoHeight || cropH;
+        let rw = mw * zoom, rh = mh * zoom;
+        let frame = getFrameBox();
+        let minX = Math.min(0, frame.w - rw);
+        let minY = Math.min(0, frame.h - rh);
+        if (cropMode === 'original') {
+          if (rw <= frame.w) nx = (frame.w - rw) / 2;
+          else nx = Math.min(0, Math.max(nx, frame.w - rw));
+          if (rh <= frame.h) ny = (frame.h - rh) / 2;
+          else ny = Math.min(0, Math.max(ny, frame.h - rh));
+        } else {
+          nx = Math.max(minX, Math.min(nx, 0));
+          ny = Math.max(minY, Math.min(ny, 0));
+        }
+        return { x: nx, y: ny };
+      }
+      // Drag logic
+      const wrap = media.parentElement;
+      wrap.onmousedown = e => {
+        dragging = true;
+        dragStart = { x: e.clientX, y: e.clientY };
+        offsetStart = { ...offset };
+        e.preventDefault();
+      };
+      document.onmousemove = e => {
+        if (!dragging) return;
+        let dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+        let nx = offsetStart.x + dx, ny = offsetStart.y + dy;
+        offset = clampOffsets(nx, ny);
+        applyTransform();
+      };
+      document.onmouseup = e => dragging = false;
+      wrap.ontouchstart = e => {
+        dragging = true;
+        dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        offsetStart = { ...offset };
+      };
+      wrap.ontouchmove = e => {
+        if (!dragging) return;
+        let dx = e.touches[0].clientX - dragStart.x, dy = e.touches[0].clientY - dragStart.y;
+        let nx = offsetStart.x + dx, ny = offsetStart.y + dy;
+        offset = clampOffsets(nx, ny);
+        applyTransform();
+      };
+      wrap.ontouchend = e => dragging = false;
+      offset = { x: 0, y: 0 };
+      applyTransform();
+    }, 80);
+
+    // Resize (aspect) options
+    const resizeBtn = document.getElementById("resizeBtn");
+    const aspectOpts = document.getElementById("cropAspectOptions");
+    if (resizeBtn && aspectOpts) {
+      resizeBtn.onclick = () => {
+        aspectOpts.style.display = aspectOpts.style.display === 'none' ? 'block' : 'none';
+      };
+      aspectOpts.querySelectorAll('input[name="aspect"]').forEach(radio => {
+        radio.onchange = () => {
+          cropMode = radio.value;
+          zoom = 1.0;
+          renderStep2();
+        };
+      });
+    }
+
+    // Zoom
+    const zoomBtn = document.getElementById("zoomBtn");
+    const zoomBar = document.getElementById("zoomBar");
+    if (zoomBtn && zoomBar) {
+      zoomBtn.onclick = () => {
+        zoomBar.style.display = zoomBar.style.display === 'none' ? 'flex' : 'none';
+      };
+      const zoomSlider = document.getElementById("zoomSlider");
+      if (zoomSlider) {
+        zoomSlider.value = zoom;
+        zoomSlider.oninput = function () {
+          zoom = parseFloat(this.value);
+          setTimeout(() => {
+            const media = document.getElementById('mainCropMedia');
+            if (media) media.style.transform = `translate(${offset.x}px,${offset.y}px) scale(${zoom})`;
+          }, 10);
+        };
+      }
+    }
+
+    // Back (close overlay)
+    const backBtn = stepContent.querySelector('.back-btn');
+    if (backBtn) backBtn.onclick = () => closeMultiStepOverlay();
+
+    // Next
+    const nextBtn = stepContent.querySelector("#cropNextBtn");
+    if (nextBtn) nextBtn.onclick = () => showUploadStep3(currFiles);
+
+    // Arrow navigation
+    const prevBtn = stepContent.querySelector("#prevCrop");
+    if (prevBtn) prevBtn.onclick = () => { currIdx = (currIdx - 1 + currFiles.length) % currFiles.length; renderStep2(); };
+    const nextArrowBtn = stepContent.querySelector("#nextCrop");
+    if (nextArrowBtn) nextArrowBtn.onclick = () => { currIdx = (currIdx + 1) % currFiles.length; renderStep2(); };
+
+    // Thumbnails
+    stepContent.querySelectorAll(".thumb-image, .thumb-video").forEach(img => {
+      img.onclick = () => { currIdx = Number(img.getAttribute("data-idx")); renderStep2(); };
+    });
+    // Remove
+    stepContent.querySelectorAll(".thumb-remove-btn").forEach(btn => {
+      btn.onclick = () => {
+        const removeIdx = Number(btn.getAttribute("data-idx"));
+        currFiles.splice(removeIdx, 1);
+        if (currFiles.length === 0) { closeMultiStepOverlay(); return; }
+        if (currIdx >= currFiles.length) currIdx = currFiles.length - 1;
+        renderStep2();
+      };
+    });
+    // Add more
+    const addBtn = stepContent.querySelector("#addMoreThumb");
+    if (addBtn) {
+      addBtn.onclick = () => {
+        const fileInput = document.createElement("input");
+        fileInput.type = "file";
+        fileInput.accept = "image/*,video/*";
+        fileInput.multiple = true;
+        fileInput.style.display = "none";
+        fileInput.onchange = function () {
+          if (fileInput.files.length) {
+            let added = Array.from(fileInput.files);
+            let allowed = Math.min(5 - currFiles.length, added.length);
+            currFiles = currFiles.concat(added.slice(0, allowed));
+            renderStep2();
+          }
+        };
+        document.body.appendChild(fileInput);
+        fileInput.click();
+        setTimeout(() => fileInput.remove(), 1200);
+      };
+    }
   }
+  renderStep2();
+}
+
+
 
   // Step 3: Caption & Details
   function showUploadStep3(files) {
