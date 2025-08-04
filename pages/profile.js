@@ -293,4 +293,149 @@ function getInitialsFromName(name) {
   }
 }
 
+document.addEventListener("DOMContentLoaded", function () {
+  const uploadTrigger = document.getElementById("uploadTrigger");
+  const overlay = document.getElementById("multiStepUploadOverlay");
+  const stepContent = document.getElementById("uploadStepContent");
+
+  // 1st Step: Show Instagram style upload
+  function showUploadStep1() {
+    stepContent.innerHTML = `
+      <button class="close-btn" onclick="closeMultiStepOverlay()">&times;</button>
+      <div class="upload-instagram-step1">
+        <h3 style="font-weight: 600; margin-bottom: 10px;">Create new post</h3>
+        <div class="upload-instagram-icon">
+          <i class="fas fa-photo-video"></i>
+        </div>
+        <div style="color: #262626; font-size: 1.05rem; margin-bottom: 8px;">
+          Drag photos and videos here
+        </div>
+        <button class="upload-instagram-btn" id="uploadSelectBtn">Select From Computer</button>
+        <input type="file" id="multiStepMediaInput" accept="image/*,video/*" multiple style="display: none;">
+      </div>
+    `;
+    overlay.style.display = "flex";
+    document.body.style.overflow = "hidden";
+
+    // Drag-drop functionality can be added here if needed.
+
+    // Button: Select from Computer
+    const selectBtn = document.getElementById("uploadSelectBtn");
+    const input = document.getElementById("multiStepMediaInput");
+    selectBtn.onclick = () => input.click();
+
+    // On file select, go to Step 2 (preview)
+    input.onchange = function () {
+      if (input.files.length === 0) return;
+      // TODO: Go to Step 2: Preview & Next
+      showUploadStep2(Array.from(input.files));
+    };
+  }
+
+  // Step 2: Media Preview
+  function showUploadStep2(files) {
+    stepContent.innerHTML = `
+      <button class="close-btn" onclick="closeMultiStepOverlay()">&times;</button>
+      <div style="padding: 30px 18px; min-height: 280px;">
+        <h3 style="font-weight: 600; margin-bottom: 10px;">Preview & Next</h3>
+        <div id="multiStepPreview" style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 16px;"></div>
+        <button class="upload-instagram-btn" id="uploadNextStepBtn">Next</button>
+      </div>
+    `;
+    // Preview rendering
+    const preview = document.getElementById("multiStepPreview");
+    files.forEach(file => {
+      const url = URL.createObjectURL(file);
+      let el;
+      if (file.type.startsWith("image/")) {
+        el = document.createElement("img");
+        el.src = url;
+        el.style.width = "80px";
+        el.style.height = "80px";
+        el.style.objectFit = "cover";
+        el.style.borderRadius = "8px";
+      } else {
+        el = document.createElement("video");
+        el.src = url;
+        el.controls = true;
+        el.style.width = "80px";
+        el.style.height = "80px";
+        el.style.borderRadius = "8px";
+        el.style.objectFit = "cover";
+      }
+      preview.appendChild(el);
+    });
+
+    // Next step
+    document.getElementById("uploadNextStepBtn").onclick = () => {
+      showUploadStep3(files);
+    };
+  }
+
+  // Step 3: Caption & Details
+  function showUploadStep3(files) {
+    stepContent.innerHTML = `
+      <button class="close-btn" onclick="closeMultiStepOverlay()">&times;</button>
+      <div style="padding: 30px 18px;">
+        <h3 style="font-weight: 600; margin-bottom: 10px;">Add Details</h3>
+        <textarea id="multiStepCaption" placeholder="Write a caption..." rows="3"
+          style="width: 100%; border-radius: 8px; padding: 10px; font-size: 14px; resize: none; margin-bottom: 18px;"></textarea>
+        <button class="upload-instagram-btn" id="uploadPostBtn">Post</button>
+      </div>
+    `;
+    document.getElementById("uploadPostBtn").onclick = () => {
+      const caption = document.getElementById("multiStepCaption").value.trim();
+      showUploadStep4(files, caption);
+    };
+  }
+
+  // Step 4: Post Confirmed
+  function showUploadStep4(files, caption) {
+    stepContent.innerHTML = `
+      <div style="padding: 50px 18px; text-align: center;">
+        <h3 style="font-weight: 600; margin-bottom: 20px;">Post Created!</h3>
+        <div style="font-size: 2.5rem; margin-bottom: 18px;">✅</div>
+        <div style="margin-bottom: 8px;">Your post is ready.</div>
+        <button class="upload-instagram-btn" onclick="closeMultiStepOverlay()">Close</button>
+      </div>
+    `;
+    // Optional: Save to localStorage / render gallery here
+    // (Can add more logic as needed)
+    savePost(files, caption);
+  }
+
+  // Save post to localStorage & refresh gallery
+  function savePost(files, caption) {
+    // Convert files to base64
+    const readerPromises = files.map(file => {
+      return new Promise(resolve => {
+        const reader = new FileReader();
+        reader.onload = () => resolve({ type: file.type, data: reader.result });
+        reader.readAsDataURL(file);
+      });
+    });
+
+    Promise.all(readerPromises).then(mediaData => {
+      const post = {
+        caption: caption,
+        media: mediaData,
+        time: Date.now()
+      };
+      const posts = JSON.parse(localStorage.getItem("userPosts") || "[]");
+      posts.unshift(post);
+      localStorage.setItem("userPosts", JSON.stringify(posts));
+      if (window.renderPosts) window.renderPosts();
+    });
+  }
+
+  // Overlay close
+  window.closeMultiStepOverlay = function () {
+    overlay.style.display = "none";
+    document.body.style.overflow = "auto";
+  };
+
+  // Floating Upload Trigger
+  uploadTrigger.onclick = showUploadStep1;
+});
+
 

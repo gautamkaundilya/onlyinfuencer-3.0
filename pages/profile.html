@@ -143,34 +143,6 @@
         </div>
       </div>
 
-
-      <div class="upload-box">
-        <h3>Create New Post</h3>
-        <div class="drag-drop">
-          <i class="fas fa-cloud-upload-alt" style="font-size: 2rem;"></i>
-          <h4>Drag photos and videos here</h4>
-          <p>or click to select from your computer</p>
-          <button>Select Files</button>
-        </div>
-        <div class="upload-rules">
-          <div>
-            <strong>📷 Images:</strong><br />
-            • Multiple images allowed<br />
-            • Max 30MB per image<br />
-            • JPG, PNG, GIF formats
-          </div>
-          <div>
-            <strong>🎥 Videos:</strong><br />
-            • Only 1 video per post<br />
-            • Max 30MB per video<br />
-            • MP4, MOV, AVI, WebM formats
-          </div>
-        </div>
-        <div class="note">
-          ⚠️ <strong>Important:</strong> Cannot mix images and videos in the same post. Post them separately.
-        </div>
-      </div>
-
       <div class="tabs">
         <div class="active"><i class="far fa-image"></i> Posts</div>
         <div><i class="fas fa-video"></i> Videos</div>
@@ -218,6 +190,23 @@
       </div>
     </div>
 
+    <!-- ✅ Floating Upload Button -->
+    <div class="floating-upload" id="uploadTrigger">
+      <i class="fas fa-plus"></i>
+    </div>
+
+    <!-- Multi-Step Upload Overlay (Step 1: Drag & Drop) -->
+    <div id="multiStepUploadOverlay" class="overlay" style="display: none;">
+      <div class="overlay-content" id="uploadStepContent" style="max-width: 410px; padding: 0;">
+        <!-- Step content injected by JS -->
+      </div>
+    </div>
+
+
+
+
+    <!-- ✅ Hidden File Input -->
+    <input type="file" id="mediaPicker" accept="image/*,video/*" multiple style="display: none;" />
 
     <script src="profile.js"></script>
 </body>

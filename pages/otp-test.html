@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phone OTP Test - Firebase</title>
+</head>
+<body>
+  <h2>📱 Firebase Phone OTP Test</h2>
+
+  <div>
+    <label>Phone Number:</label>
+    <input type="tel" id="phoneInput" placeholder="+91XXXXXXXXXX">
+    <button onclick="sendOTP()">Send OTP</button>
+  </div>
+
+  <div id="recaptcha-container"></div>
+
+  <div style="margin-top:20px;">
+    <label>Enter OTP:</label>
+    <input type="text" id="otpInput" placeholder="123456">
+    <button onclick="verifyOTP()">Verify OTP</button>
+  </div>
+
+  <p id="status" style="color: green; font-weight: bold;"></p>
+  <p id="error" style="color: red;"></p>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <script>
+    // ✅ Firebase Config (same as yours)
+    const firebaseConfig = {
+  apiKey: "AIzaSyC5zpNktvPIKylu5m6lYzEzq-wXd3POw7o",  // ✅ CORRECT ONE
+  authDomain: "onlyinfluencer-3a3cd.firebaseapp.com",
+  projectId: "onlyinfluencer-3a3cd",
+  storageBucket: "onlyinfluencer-3a3cd.appspot.com", // ✅ fix .firebasestorage.app to .appspot.com
+  messagingSenderId: "279766306715",
+  appId: "1:279766306715:web:185ba47cc4c24f868c1b3e",
+  measurementId: "G-GKYQVM6J8G"
+};
+
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // ✅ reCAPTCHA
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible',
+      callback: (response) => {
+        console.log("reCAPTCHA solved");
+      }
+    });
+
+    // ✅ Send OTP
+    function sendOTP() {
+      const phone = document.getElementById("phoneInput").value;
+      const appVerifier = window.recaptchaVerifier;
+      document.getElementById("error").textContent = "";
+      document.getElementById("status").textContent = "";
+
+      if (!phone || phone.length < 10) {
+        document.getElementById("error").textContent = "Invalid phone number.";
+        return;
+      }
+
+      auth.signInWithPhoneNumber(phone, appVerifier)
+        .then((confirmationResult) => {
+          window.confirmationResult = confirmationResult;
+          document.getElementById("status").textContent = "OTP Sent Successfully!";
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById("error").textContent = "Error sending OTP: " + error.message;
+        });
+    }
+
+    // ✅ Verify OTP
+    function verifyOTP() {
+      const code = document.getElementById("otpInput").value;
+      document.getElementById("error").textContent = "";
+      document.getElementById("status").textContent = "";
+
+      if (!code || code.length !== 6) {
+        document.getElementById("error").textContent = "Enter valid 6-digit OTP.";
+        return;
+      }
+
+      window.confirmationResult.confirm(code)
+        .then((result) => {
+          const user = result.user;
+          document.getElementById("status").textContent = "✅ OTP Verified. User signed in!";
+          console.log("User:", user);
+        })
+        .catch((error) => {
+          console.error(error);
+          document.getElementById("error").textContent = "❌ OTP Verification failed: " + error.message;
+        });
+    }
+  </script>
+</body>
+</html>
