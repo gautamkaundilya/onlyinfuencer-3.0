@@ -334,11 +334,13 @@ document.addEventListener("DOMContentLoaded", function () {
   // Step 2: Media Preview
   function showUploadStep2(files) {
   let currIdx = 0;
-  let currFiles = files.slice();
-  let cropMode = 'original'; // original, 1:1, 4:5, 16:9
-  let zoom = 1;
-  let offset = { x: 0, y: 0 };
-  let dragging = false, dragStart = { x: 0, y: 0 }, offsetStart = { x: 0, y: 0 };
+
+  // Each file ki crop state store: { cropMode, zoom, offset }
+  let mediaState = files.map(() => ({
+    cropMode: "original",
+    zoom: 1,
+    offset: { x: 0, y: 0 }
+  }));
 
   function getAspect(aspect) {
     if (aspect === "1:1") return 1;
@@ -348,21 +350,27 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function renderStep2() {
-    const file = currFiles[currIdx];
-    let aspectVal = getAspect(cropMode);
-    // Make crop box Instagram style — centered and max possible size
+    const file = files[currIdx];
+    const state = mediaState[currIdx];
+    let aspectVal = getAspect(state.cropMode);
+
+    // Instagram style crop box
     let cropW = 330, cropH = 370;
-    if (aspectVal) {
+    if (state.cropMode !== "original" && aspectVal) {
       if (aspectVal >= 1) {
         cropW = 330; cropH = Math.round(330 / aspectVal);
       } else {
         cropH = 330; cropW = Math.round(330 * aspectVal);
       }
+    } else {
+      // Original: keep a nice box, fit media inside
+      cropW = 330; cropH = 370;
     }
-    // Mobile responsiveness
     if (window.innerWidth < 600) {
       cropW = Math.min(280, window.innerWidth - 38);
-      cropH = aspectVal ? Math.round(cropW / aspectVal) : 280;
+      cropH = state.cropMode !== "original" && aspectVal
+        ? Math.round(cropW / aspectVal)
+        : 280;
     }
 
     stepContent.innerHTML = `
@@ -373,13 +381,14 @@ document.addEventListener("DOMContentLoaded", function () {
           <button class="next-btn" id="cropNextBtn">Next</button>
         </div>
         <div class="crop-image-view" style="height:${cropH + 0}px;display:flex;align-items:center;justify-content:center;">
-          <div class="crop-image-wrap" style="width:${cropW}px;height:${cropH}px;margin:auto;">
-            ${file.type.startsWith("image/")
-              ? `<img src="${URL.createObjectURL(file)}" id="mainCropMedia" draggable="false" />`
-              : `<video src="${URL.createObjectURL(file)}" id="mainCropMedia" autoplay muted loop draggable="false"></video>`
+          <div class="crop-image-wrap ${state.cropMode === "original" ? "original" : "ratio"}" style="width:${cropW}px;height:${cropH}px;margin:auto;position:relative;">
+            ${
+              file.type.startsWith("image/")
+                ? `<img src="${URL.createObjectURL(file)}" id="mainCropMedia" draggable="false" style="background:#fff;" />`
+                : `<video src="${URL.createObjectURL(file)}" id="mainCropMedia" autoplay muted loop draggable="false" style="background:#fff;"></video>`
             }
           </div>
-          ${currFiles.length > 1 ? `
+          ${files.length > 1 ? `
             <button class="crop-arrow left" id="prevCrop" style="left:10px;"><i class="fas fa-chevron-left"></i></button>
             <button class="crop-arrow right" id="nextCrop" style="right:10px;"><i class="fas fa-chevron-right"></i></button>
           ` : ''}
@@ -389,34 +398,34 @@ document.addEventListener("DOMContentLoaded", function () {
           </div>
           <div class="crop-aspect-options" id="cropAspectOptions" style="display:none;">
             <label>
-              <input type="radio" name="aspect" value="original" ${cropMode === "original" ? "checked" : ""} />
+              <input type="radio" name="aspect" value="original" ${state.cropMode === "original" ? "checked" : ""} />
               <span class="aspect-label">Original</span>
               <span class="aspect-icon"><i class="far fa-image"></i></span>
             </label>
             <label>
-              <input type="radio" name="aspect" value="1:1" ${cropMode === "1:1" ? "checked" : ""} />
+              <input type="radio" name="aspect" value="1:1" ${state.cropMode === "1:1" ? "checked" : ""} />
               <span class="aspect-label">1:1</span>
               <span class="aspect-icon"><i class="fas fa-square"></i></span>
             </label>
             <label>
-              <input type="radio" name="aspect" value="4:5" ${cropMode === "4:5" ? "checked" : ""} />
+              <input type="radio" name="aspect" value="4:5" ${state.cropMode === "4:5" ? "checked" : ""} />
               <span class="aspect-label">4:5</span>
               <span class="aspect-icon"><i class="fas fa-rectangle-vertical"></i></span>
             </label>
             <label>
-              <input type="radio" name="aspect" value="16:9" ${cropMode === "16:9" ? "checked" : ""} />
+              <input type="radio" name="aspect" value="16:9" ${state.cropMode === "16:9" ? "checked" : ""} />
               <span class="aspect-label">16:9</span>
               <span class="aspect-icon"><i class="fas fa-rectangle-wide"></i></span>
             </label>
           </div>
           <div class="crop-zoom-bar" id="zoomBar" style="display:none;">
             <span class="zoom-label"><i class="fas fa-search-minus"></i></span>
-            <input type="range" min="1" max="2.6" step="0.01" id="zoomSlider" value="${zoom}">
+            <input type="range" min="1" max="2.6" step="0.01" id="zoomSlider" value="${state.zoom}">
             <span class="zoom-label"><i class="fas fa-search-plus"></i></span>
           </div>
         </div>
         <div class="step2-thumbnails">
-          ${currFiles.map((f, idx) => `
+          ${files.map((f, idx) => `
             <div class="thumb-wrapper">
               ${f.type.startsWith("image/") ?
                 `<img src="${URL.createObjectURL(f)}" class="thumb-image${currIdx === idx ? ' selected' : ''}" data-idx="${idx}" />`
@@ -427,12 +436,12 @@ document.addEventListener("DOMContentLoaded", function () {
               <button class="thumb-remove-btn" data-idx="${idx}" title="Remove">&times;</button>
             </div>
           `).join('')}
-          ${currFiles.length < 5 ? `<div class="thumb-add-btn" id="addMoreThumb">+</div>` : ''}
+          ${files.length < 5 ? `<div class="thumb-add-btn" id="addMoreThumb">+</div>` : ''}
         </div>
       </div>
     `;
 
-    // Crop image/video transform and pan/zoom
+    // Crop transform, pan/zoom logic (per-media)
     setTimeout(() => {
       const media = document.getElementById('mainCropMedia');
       if (!media) return;
@@ -441,17 +450,23 @@ document.addEventListener("DOMContentLoaded", function () {
         return { w: cropW, h: cropH, aspect: aspectVal };
       }
       function applyTransform() {
-        let cx = offset.x, cy = offset.y;
-        media.style.transform = `translate(${cx}px,${cy}px) scale(${zoom})`;
+        // In "original", always center with object-fit:contain (no crop, no transform)
+        if (state.cropMode === "original") {
+          media.style.transform = "";
+          return;
+        }
+        let cx = state.offset.x, cy = state.offset.y;
+        media.style.transform = `translate(${cx}px,${cy}px) scale(${state.zoom})`;
       }
       function clampOffsets(nx, ny) {
         let mw = media.naturalWidth || media.videoWidth || cropW;
         let mh = media.naturalHeight || media.videoHeight || cropH;
-        let rw = mw * zoom, rh = mh * zoom;
+        let rw = mw * state.zoom, rh = mh * state.zoom;
         let frame = getFrameBox();
         let minX = Math.min(0, frame.w - rw);
         let minY = Math.min(0, frame.h - rh);
-        if (cropMode === 'original') {
+        if (state.cropMode === 'original') {
+          // Not actually used, but for safety
           if (rw <= frame.w) nx = (frame.w - rw) / 2;
           else nx = Math.min(0, Math.max(nx, frame.w - rw));
           if (rh <= frame.h) ny = (frame.h - rh) / 2;
@@ -462,40 +477,49 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         return { x: nx, y: ny };
       }
-      // Drag logic
+      // Drag logic (only for non-original)
       const wrap = media.parentElement;
-      wrap.onmousedown = e => {
-        dragging = true;
-        dragStart = { x: e.clientX, y: e.clientY };
-        offsetStart = { ...offset };
-        e.preventDefault();
-      };
-      document.onmousemove = e => {
-        if (!dragging) return;
-        let dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
-        let nx = offsetStart.x + dx, ny = offsetStart.y + dy;
-        offset = clampOffsets(nx, ny);
-        applyTransform();
-      };
-      document.onmouseup = e => dragging = false;
-      wrap.ontouchstart = e => {
-        dragging = true;
-        dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        offsetStart = { ...offset };
-      };
-      wrap.ontouchmove = e => {
-        if (!dragging) return;
-        let dx = e.touches[0].clientX - dragStart.x, dy = e.touches[0].clientY - dragStart.y;
-        let nx = offsetStart.x + dx, ny = offsetStart.y + dy;
-        offset = clampOffsets(nx, ny);
-        applyTransform();
-      };
-      wrap.ontouchend = e => dragging = false;
-      offset = { x: 0, y: 0 };
+      if (state.cropMode !== "original") {
+        wrap.onmousedown = e => {
+          dragging = true;
+          dragStart = { x: e.clientX, y: e.clientY };
+          offsetStart = { ...state.offset };
+          e.preventDefault();
+        };
+        document.onmousemove = e => {
+          if (!dragging) return;
+          let dx = e.clientX - dragStart.x, dy = e.clientY - dragStart.y;
+          let nx = offsetStart.x + dx, ny = offsetStart.y + dy;
+          state.offset = clampOffsets(nx, ny);
+          applyTransform();
+        };
+        document.onmouseup = e => dragging = false;
+        wrap.ontouchstart = e => {
+          dragging = true;
+          dragStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+          offsetStart = { ...state.offset };
+        };
+        wrap.ontouchmove = e => {
+          if (!dragging) return;
+          let dx = e.touches[0].clientX - dragStart.x, dy = e.touches[0].clientY - dragStart.y;
+          let nx = offsetStart.x + dx, ny = offsetStart.y + dy;
+          state.offset = clampOffsets(nx, ny);
+          applyTransform();
+        };
+        wrap.ontouchend = e => dragging = false;
+      } else {
+        // In "original" mode, no dragging
+        wrap.onmousedown = null;
+        document.onmousemove = null;
+        document.onmouseup = null;
+        wrap.ontouchstart = null;
+        wrap.ontouchmove = null;
+        wrap.ontouchend = null;
+      }
       applyTransform();
-    }, 80);
+    }, 100);
 
-    // Resize (aspect) options
+    // Resize (aspect) options (per-media)
     const resizeBtn = document.getElementById("resizeBtn");
     const aspectOpts = document.getElementById("cropAspectOptions");
     if (resizeBtn && aspectOpts) {
@@ -504,14 +528,16 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       aspectOpts.querySelectorAll('input[name="aspect"]').forEach(radio => {
         radio.onchange = () => {
-          cropMode = radio.value;
-          zoom = 1.0;
+          state.cropMode = radio.value;
+          // On ratio change: reset zoom/offset for that media
+          state.zoom = 1.0;
+          state.offset = { x: 0, y: 0 };
           renderStep2();
         };
       });
     }
 
-    // Zoom
+    // Zoom (per-media)
     const zoomBtn = document.getElementById("zoomBtn");
     const zoomBar = document.getElementById("zoomBar");
     if (zoomBtn && zoomBar) {
@@ -520,12 +546,12 @@ document.addEventListener("DOMContentLoaded", function () {
       };
       const zoomSlider = document.getElementById("zoomSlider");
       if (zoomSlider) {
-        zoomSlider.value = zoom;
+        zoomSlider.value = state.zoom;
         zoomSlider.oninput = function () {
-          zoom = parseFloat(this.value);
+          state.zoom = parseFloat(this.value);
           setTimeout(() => {
             const media = document.getElementById('mainCropMedia');
-            if (media) media.style.transform = `translate(${offset.x}px,${offset.y}px) scale(${zoom})`;
+            if (media) media.style.transform = `translate(${state.offset.x}px,${state.offset.y}px) scale(${state.zoom})`;
           }, 10);
         };
       }
@@ -537,13 +563,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Next
     const nextBtn = stepContent.querySelector("#cropNextBtn");
-    if (nextBtn) nextBtn.onclick = () => showUploadStep3(currFiles);
+    if (nextBtn) nextBtn.onclick = () => showUploadStep3(files);
 
     // Arrow navigation
     const prevBtn = stepContent.querySelector("#prevCrop");
-    if (prevBtn) prevBtn.onclick = () => { currIdx = (currIdx - 1 + currFiles.length) % currFiles.length; renderStep2(); };
+    if (prevBtn) prevBtn.onclick = () => { currIdx = (currIdx - 1 + files.length) % files.length; renderStep2(); };
     const nextArrowBtn = stepContent.querySelector("#nextCrop");
-    if (nextArrowBtn) nextArrowBtn.onclick = () => { currIdx = (currIdx + 1) % currFiles.length; renderStep2(); };
+    if (nextArrowBtn) nextArrowBtn.onclick = () => { currIdx = (currIdx + 1) % files.length; renderStep2(); };
 
     // Thumbnails
     stepContent.querySelectorAll(".thumb-image, .thumb-video").forEach(img => {
@@ -553,9 +579,10 @@ document.addEventListener("DOMContentLoaded", function () {
     stepContent.querySelectorAll(".thumb-remove-btn").forEach(btn => {
       btn.onclick = () => {
         const removeIdx = Number(btn.getAttribute("data-idx"));
-        currFiles.splice(removeIdx, 1);
-        if (currFiles.length === 0) { closeMultiStepOverlay(); return; }
-        if (currIdx >= currFiles.length) currIdx = currFiles.length - 1;
+        files.splice(removeIdx, 1);
+        mediaState.splice(removeIdx, 1);
+        if (files.length === 0) { closeMultiStepOverlay(); return; }
+        if (currIdx >= files.length) currIdx = files.length - 1;
         renderStep2();
       };
     });
@@ -571,8 +598,13 @@ document.addEventListener("DOMContentLoaded", function () {
         fileInput.onchange = function () {
           if (fileInput.files.length) {
             let added = Array.from(fileInput.files);
-            let allowed = Math.min(5 - currFiles.length, added.length);
-            currFiles = currFiles.concat(added.slice(0, allowed));
+            let allowed = Math.min(5 - files.length, added.length);
+            files.push(...added.slice(0, allowed));
+            mediaState.push(...added.slice(0, allowed).map(() => ({
+              cropMode: "original",
+              zoom: 1,
+              offset: { x: 0, y: 0 }
+            })));
             renderStep2();
           }
         };
@@ -584,8 +616,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
   renderStep2();
 }
-
-
 
   // Step 3: Caption & Details
   function showUploadStep3(files) {
